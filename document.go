@@ -56,6 +56,6 @@ func CreateDocument(doc map[string]interface{}, collection string, createCollect
 	if err != nil {
 		return
 	}
-	d = Document(v)
+	d, err = Find(v["_id"].(string))
 	return
 }
