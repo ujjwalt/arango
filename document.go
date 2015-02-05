@@ -40,7 +40,7 @@ func FindIf(handle, etag string, match bool) (d Document, err error) {
 		if err != nil {
 			return
 		}
-		err = json.Unmarshal(data, d) // unmarshall into the document and return
+		err = json.Unmarshal(data, &d) // unmarshall into the document and return
 	} else if !((match && resp.StatusCode == 412) || (!match && resp.StatusCode == 304) || resp.StatusCode == 404) {
 		panic(apiChanedPanic) // did not get a expected status code based on match
 	}
