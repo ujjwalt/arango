@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -40,14 +41,43 @@ func CurrentDB() (*Database, error) {
 	return d, nil
 }
 
-func get(path string) (o map[string]interface{}, err error) {
+func get(path string) (v map[string]interface{}, err error) {
 	data, err := getRaw(path)
-	err = json.Unmarshal(data, &o)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(data, &v)
 	return
 }
 
 func getRaw(path string) (data []byte, err error) {
 	r, err := client.Get(endpoint + path)
+	if err != nil {
+		return
+	}
+	defer r.Body.Close()
+
+	data, err = ioutil.ReadAll(r.Body)
+	return
+}
+
+func post(path string, body map[string]interface{}) (v map[string]interface{}, err error) {
+	data, err := postRaw(path, body)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(data, &v)
+	return
+}
+
+func postRaw(path string, object map[string]interface{}) (data []byte, err error) {
+	data, err = json.Marshal(object)
+	if err != nil {
+		return
+	}
+
+	body := strings.NewReader(string(data))
+	r, err := client.Post(endpoint+path, "application/json", body)
 	if err != nil {
 		return
 	}
