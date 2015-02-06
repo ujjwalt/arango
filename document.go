@@ -8,6 +8,10 @@ import (
 
 type Document map[string]interface{}
 
+func (d Document) Id() string  { return d["_id"].(string) }
+func (d Document) Key() string { return d["_key"].(string) }
+func (d Document) Rev() string { return d["_rev"].(string) }
+
 func Find(handle string) (d Document, err error) {
 	data, err := getRaw("/_api/document/" + handle)
 	if err != nil {

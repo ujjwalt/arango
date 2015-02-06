@@ -32,8 +32,7 @@ func TestCurrentDB(t *testing.T) {
 	log.Println(db)
 }
 
-func TestCreateDocument(t *testing.T) {
-	t.Log("Test if we can create a new document")
+func createDoc(t *testing.T) Document {
 	doc := &map[string]interface{}{
 		"name":  "Ujjwal Thaakar",
 		"email": "ujjwal@gmail.com",
@@ -44,7 +43,13 @@ func TestCreateDocument(t *testing.T) {
 	}
 
 	t.Log(d)
+	return d
+}
 
+func TestCreateDocument(t *testing.T) {
+	t.Log("Test if we can create a new document")
+
+	d := createDoc(t)
 	if _, ok := d["_id"].(string); !ok {
 		t.Fatal("Document _id should be a string")
 	}
@@ -62,6 +67,24 @@ func TestCreateDocument(t *testing.T) {
 
 func TestFind(t *testing.T) {
 	t.Log("Test if we can find a document by it's handle")
+
+	d := createDoc(t)
+	handle := d.Id()
+	same, err := Find(handle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(same)
+
+	if d.Rev() != same.Rev() {
+		t.Fatalf("Documnt with handle %s not fetched: %s != %s", handle, d.Id(), same.Rev())
+	}
+
+	log.Printf("%s: %v", handle, same)
+}
+
+func TestFindIf(t *testing.T) {
+	t.Log("Test if we can find a document by it's handle and by conditionally matching it's etag")
 	doc := &map[string]interface{}{
 		"name":  "Ujjwal Thaakar",
 		"email": "ujjwal@gmail.com",
@@ -72,16 +95,18 @@ func TestFind(t *testing.T) {
 	}
 	t.Log(d)
 
-	handle := d["_id"].(string)
-	same, err := Find(handle)
+	handle := d.Id()
+	etag := d.Rev()
+
+	same, err := FindIf(handle, etag, true)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(same)
 
-	if d["_id"] != same["_id"] {
-		t.Fatalf("Documnt with handle %s not fetched: %s != %s", handle, same["_id"], handle)
+	if d.Rev() != same.Rev() {
+		t.Fatalf("Documnt with handle %s not fetched: %s != %s", handle, d.Id(), same.Rev())
 	}
 
-	log.Printf("%s: %v", handle, same)
+	log.Printf("%s == %s", d.Rev(), same.Rev())
 }
